@@ -35,6 +35,7 @@ arr.splice(index, 0, item); will insert item into arr at the specified index (de
   - [ ] comparer aux algos les plus performants
 
 ### Global Refacto Checklist
+  - [ ] Lint du code
   - [ ] Le code s'éxécute bien avec ts-node => (sinon corriger les erreurs)
   - [ ] DRY => Don't repeat yourself
   - [ ] Verifier règles de [clean code](https://github.com/labs42io/clean-code-typescript)

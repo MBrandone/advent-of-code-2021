@@ -3,9 +3,6 @@ import {dayTemplate} from "./dayTemplate";
 describe('Day Template', () => {
     describe('Part 1', () => {
         test('example', () => {
-            // given
-            const exampleData = []
-
             // when
             const result = dayTemplate()
 
@@ -24,9 +21,6 @@ describe('Day Template', () => {
 
     describe('Part 2', () => {
         test('example', () => {
-            // given
-            const exampleData = []
-
             // when
             const result = dayTemplate()
 
