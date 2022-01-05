@@ -1,16 +1,6 @@
-import * as fs from "fs";
+import { transformTxtToArrayOfNumbers } from "../parsers"
 
 const INITIAL_COUNT = 0
-
-export const transformTxtToArray = (fileName: string): number[] => {
-    let data = ''
-    try {
-        data = fs.readFileSync(fileName, "utf8")
-    } catch (error) {
-        console.log(error);
-    }
-    return data.split('\n').map(measureString => parseInt(measureString))
-}
 
 const countHowManyTimesItIncreases = (timesItIncrease: number, currentMeasure: number, index: number, measurements: number[]): number => {
     if (measurements[index - 1] && currentMeasure > measurements[index - 1]) {
@@ -21,8 +11,8 @@ const countHowManyTimesItIncreases = (timesItIncrease: number, currentMeasure: n
 }
 
 const addCurrentAndTwoNextMeasurements = (currentMeasure: number, index: number, measurements: number[]): number => {
-    const nextMeasure = measurements[index + 1];
-    const secondNextMeasure = measurements[index + 2];
+    const nextMeasure = measurements[index + 1]
+    const secondNextMeasure = measurements[index + 2]
     return currentMeasure + nextMeasure + secondNextMeasure
 }
 
@@ -38,12 +28,12 @@ export const howManyTimesDepthIncreaseWithWindows = (measurements: number[]): nu
 }
 
 export const day1Part1 = (puzzleFileName: string) => {
-    const measurements = transformTxtToArray(puzzleFileName)
+    const measurements = transformTxtToArrayOfNumbers(puzzleFileName)
     return howManyTimesDepthIncrease(measurements)
 }
 
 export const day1Part2 = (puzzleFileName: string) => {
-    const measurements = transformTxtToArray(puzzleFileName)
+    const measurements = transformTxtToArrayOfNumbers(puzzleFileName)
     return howManyTimesDepthIncreaseWithWindows(measurements)
 }
 

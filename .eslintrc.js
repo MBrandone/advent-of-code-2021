@@ -8,4 +8,8 @@ module.exports = {
         'eslint:recommended',
         'plugin:@typescript-eslint/recommended',
     ],
+    rules: {
+        "object-curly-spacing": ["error", "always"],
+        "semi": ["error", "never"],
+    }
 };

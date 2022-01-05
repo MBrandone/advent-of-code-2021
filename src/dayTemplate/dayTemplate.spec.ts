@@ -1,4 +1,4 @@
-import {dayTemplate} from "./dayTemplate";
+import { dayTemplate } from "./dayTemplate"
 
 describe('Day Template', () => {
     describe('Part 1', () => {
@@ -35,6 +35,6 @@ describe('Day Template', () => {
             // then
             expect(result).toBe('')
 
-        });
-    });
+        })
+    })
 })
