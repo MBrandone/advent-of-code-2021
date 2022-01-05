@@ -38,5 +38,6 @@ arr.splice(index, 0, item); will insert item into arr at the specified index (de
   - [ ] Lint du code
   - [ ] Le code s'éxécute bien avec ts-node => (sinon corriger les erreurs)
   - [ ] DRY => Don't repeat yourself
+  - [ ] Fonctions pures => Toutes les variables sont en paramètres
   - [ ] Verifier règles de [clean code](https://github.com/labs42io/clean-code-typescript)
   - [ ] Plus de let (c'est difficile à suivre)

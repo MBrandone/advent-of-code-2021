@@ -37,5 +37,5 @@ export const day1Part2 = (puzzleFileName: string) => {
     return howManyTimesDepthIncreaseWithWindows(measurements)
 }
 
-// console.log(day1Part1('src/day1/realPuzzle.txt'))
-// console.log(day1Part2('src/day1/realPuzzle.txt'))
+// console.log(day1Part1('src/day1/puzzle.txt'))
+// console.log(day1Part2('src/day1/puzzle.txt'))

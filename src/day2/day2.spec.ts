@@ -1,21 +1,13 @@
-import {whereIsTheShip, whereIsTheShip2} from "./day2";
-import {mouvments} from "./puzzle";
+import { part1, part2 } from "./day2"
+
+const examplePuzzleFilePath = 'src/day2/examplePuzzle.txt'
+const realPuzzleFilePath = 'src/day2/puzzle.txt'
 
 describe('Day 2', () => {
     describe('Part 1', () => {
         test('example', () => {
-            // given
-            const exampleData = [
-                'forward 5',
-                'down 5',
-                'forward 8',
-                'up 3',
-                'down 8',
-                'forward 2',
-            ]
-
             // when
-            const result = whereIsTheShip(exampleData)
+            const result = part1(examplePuzzleFilePath)
 
             // then
             expect(result).toBe(150)
@@ -23,7 +15,7 @@ describe('Day 2', () => {
 
         test('real challenge', () => {
             // when
-            const result = whereIsTheShip(mouvments)
+            const result = part1(realPuzzleFilePath)
 
             // then
             expect(result).toBe(2027977)
@@ -32,18 +24,8 @@ describe('Day 2', () => {
 
     describe('Part 2', () => {
         test('example', () => {
-            // given
-            const exampleData = [
-                'forward 5',
-                'down 5',
-                'forward 8',
-                'up 3',
-                'down 8',
-                'forward 2',
-            ]
-
             // when
-            const result = whereIsTheShip2(exampleData)
+            const result = part2(examplePuzzleFilePath)
 
             // then
             expect(result).toBe(900)
@@ -51,11 +33,10 @@ describe('Day 2', () => {
 
         test('real challenge', () => {
             // when
-            const result = whereIsTheShip2(mouvments)
+            const result = part2(realPuzzleFilePath)
 
             // then
             expect(result).toBe(1903644897)
-
-        });
-    });
+        })
+    })
 })
