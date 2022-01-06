@@ -1,34 +1,16 @@
-import {calculatePowerConsumption, calculatePowerConsumptionAlternative, calculateSupportRating} from "./day3";
-import {puzzle} from "./puzzle";
+import {
+    part1,
+    part2
+} from "./day3"
 
-describe('Day Template', () => {
-    const exampleData = [
-        '00100',
-        '11110',
-        '10110',
-        '10111',
-        '10101',
-        '01111',
-        '00111',
-        '11100',
-        '10000',
-        '11001',
-        '00010',
-        '01010'
-    ]
+const examplePuzzleFilePath = 'src/day3/examplePuzzle.txt'
+const realPuzzleFilePath = 'src/day3/puzzle.txt'
 
+describe('Day 3', () => {
     describe('Part 1', () => {
         test('example', () => {
             // when
-            const result = calculatePowerConsumption(exampleData)
-
-            // then
-            expect(result).toBe(198)
-        })
-
-        test('example alternative', () => {
-            // when
-            const result = calculatePowerConsumptionAlternative(exampleData)
+            const result = part1(examplePuzzleFilePath)
 
             // then
             expect(result).toBe(198)
@@ -36,15 +18,7 @@ describe('Day Template', () => {
 
         test('real challenge', () => {
             // when
-            const result = calculatePowerConsumption(puzzle)
-
-            // then
-            expect(result).toBe(2967914)
-        })
-
-        test('real challeng alternative', () => {
-            // when
-            const result = calculatePowerConsumptionAlternative(puzzle)
+            const result = part1(realPuzzleFilePath)
 
             // then
             expect(result).toBe(2967914)
@@ -54,7 +28,7 @@ describe('Day Template', () => {
     describe('Part 2', () => {
         test('example', () => {
             // when
-            const result = calculateSupportRating(exampleData)
+            const result = part2(examplePuzzleFilePath)
 
             // then
             expect(result).toBe(230)
@@ -62,11 +36,11 @@ describe('Day Template', () => {
 
         test('real challenge', () => {
             // when
-            const result = calculateSupportRating(puzzle)
+            const result = part2(realPuzzleFilePath)
 
             // then
             expect(result).toBe(7041258)
+        })
+    })
 
-        });
-    });
 })
