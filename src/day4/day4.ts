@@ -3,6 +3,11 @@
 
 // essayer avec des iterables
 
+// fixer la version de node du projet
+// => Il m'a fait chier avec Array.at'
+
+import * as fs from "fs"
+
 const checkMark = "X"
 const openMark = "O"
 type CheckMark = "X"
@@ -11,11 +16,11 @@ type Mark = CheckMark | OpenMark
 type Board = number[]
 type CheckedBoard = Mark[]
 
-const calculateLinesIndexes = (howManyNumbers) => {
-    return Array.from(Array(howManyNumbers)).reduce((acc, current, index) => {
-        if (acc.at(-1).length === Math.sqrt(howManyNumbers))
+const calculateLinesIndexes = (howManyNumbers: number) => {
+    return Array.from(Array(howManyNumbers)).reduce((acc: number[][], current, index) => {
+        if (acc[acc.length - 1].length === Math.sqrt(howManyNumbers))
             acc.push([])
-        acc.at(-1).push(index)
+        acc[acc.length - 1].push(index)
         return acc
     }, [[]])
 }
@@ -23,13 +28,13 @@ const calculateLinesIndexes = (howManyNumbers) => {
 const calculateColumnsIndexes = (howManyNumbers) => {
     let linesAndColumnsLength = Math.sqrt(howManyNumbers)
 
-    return Array.from(Array(howManyNumbers)).reduce((acc, current, index) => {
-        if (acc.at(-1).length === linesAndColumnsLength)
+    return Array.from(Array(howManyNumbers)).reduce((acc: number[][], current, index) => {
+        if (acc[acc.length - 1].length === linesAndColumnsLength)
             acc.push([])
 
         const columnNumber = acc.length - 1
         const indexToAdd = (index % linesAndColumnsLength) * linesAndColumnsLength + columnNumber
-        acc.at(-1).push(indexToAdd)
+        acc[acc.length - 1].push(indexToAdd)
         return acc
     }, [[]])
 }
@@ -172,4 +177,45 @@ export const whoIsTheLooser = (sortedNumbers: number[], boards: Board[]): number
     let sumOfUnmarkedNumber = calculateSumOfUnmarkedNumber(looserBoard, looserBoardChecked)
 
     return sortedNumberWhichProvocLoose * sumOfUnmarkedNumber
+}
+
+export const part1 = (fileName: string) => {
+    let data = ''
+    try {
+        data = fs.readFileSync(fileName, "utf8")
+    } catch (error) {
+        console.log(error)
+    }
+
+    const [numberAsString, ...boardsAsString]: string[] = data.split('\n\n')
+
+    const numbers = numberAsString.split(',').map(stringNumber => parseInt(stringNumber))
+    const boards = boardsAsString.map(boardAsString => {
+        return boardAsString
+            .split(/ |\n/)
+            .filter(numberAsString => numberAsString !== '')
+            .map(numberString => parseInt(numberString))
+    })
+
+    return whoIsTheWinner(numbers, boards)
+}
+
+export const part2 = (fileName: string) => {
+    let data = ''
+    try {
+        data = fs.readFileSync(fileName, "utf8")
+    } catch (error) {
+        console.log(error)
+    }
+
+    const [numberAsString, ...boardsAsString]: string[] = data.split('\n\n')
+
+    const numbers = numberAsString.split(',').map(stringNumber => parseInt(stringNumber))
+    const boards = boardsAsString.map(boardAsString => {
+        return boardAsString
+            .split(/ |\n/)
+            .filter(numberAsString => numberAsString !== '')
+            .map(numberString => parseInt(numberString))
+    })
+    return whoIsTheLooser(numbers, boards)
 }
