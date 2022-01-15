@@ -1,185 +1,147 @@
-// Essayer de ne plus avoir de let
-// essayer avec la pro fonctionnelles
-
-// essayer avec des iterables
-
-// fixer la version de node du projet
-// => Il m'a fait chier avec Array.at'
+/*
+- [ ] Sortir la transfo de fichier vers les utils
+- [ ] Créer objet qui défint le gagnant et perdant et resultat (On ne veut pas de let)
+- [ ] Donner direct un tableau de tableau pour les board plutot que juste un tableau => ça facilite la description des lignes et colonnes
+- [ ] Fixer la version de node du projet => Il m'a fait chier avec Array.at'
+- [ ] Faire les refacto globale
+* */
 
 import * as fs from "fs"
 
-const checkMark = "X"
-const openMark = "O"
-type CheckMark = "X"
-type OpenMark = "O"
-type Mark = CheckMark | OpenMark
-type Board = number[]
-type CheckedBoard = Mark[]
-
-const calculateLinesIndexes = (howManyNumbers: number) => {
-    return Array.from(Array(howManyNumbers)).reduce((acc: number[][], current, index) => {
-        if (acc[acc.length - 1].length === Math.sqrt(howManyNumbers))
-            acc.push([])
-        acc[acc.length - 1].push(index)
-        return acc
-    }, [[]])
+interface BoardRules {
+    winWithNumbers: (sortedNumbers: number[]) => boolean
+    sumOfNotDrawnNumbers: (sortedNumbers: number[]) => number
 }
 
-const calculateColumnsIndexes = (howManyNumbers) => {
-    let linesAndColumnsLength = Math.sqrt(howManyNumbers)
+export class Board implements BoardRules {
+    private columns: number[][] = []
+    private lines: number[][] = []
 
-    return Array.from(Array(howManyNumbers)).reduce((acc: number[][], current, index) => {
-        if (acc[acc.length - 1].length === linesAndColumnsLength)
-            acc.push([])
+    constructor(
+        private boardNumbers: number[]
+    ) {
+        const linesAndColumnsLength = Math.sqrt(boardNumbers.length)
 
-        const columnNumber = acc.length - 1
-        const indexToAdd = (index % linesAndColumnsLength) * linesAndColumnsLength + columnNumber
-        acc[acc.length - 1].push(indexToAdd)
-        return acc
-    }, [[]])
+        this.lines = boardNumbers.reduce((lines, currentNumber) => {
+            if (lines[lines.length - 1].length === linesAndColumnsLength)
+                lines.push([])
+            lines[lines.length - 1].push(currentNumber)
+            return lines
+        }, [[]])
+
+        this.columns = boardNumbers.reduce((columns, currentNumber, index) => {
+            const columnIndexToPush = index % linesAndColumnsLength
+            if (columns[columnIndexToPush] === undefined) {
+                columns[columnIndexToPush] = [] as number[]
+            }
+
+            columns[columnIndexToPush].push(currentNumber)
+            return columns
+        }, [])
+
+    }
+
+    winWithNumbers(drawnNumbers: number[]): boolean {
+        const oneLineIsComplete: boolean = this.lines.reduce((oneLineIsComplete, currentLine) => {
+
+            const lineIsComplete = currentLine.reduce((lineIsComplete, currentLineNumber) => {
+                if (!drawnNumbers.includes(currentLineNumber)) {
+                    return false
+                }
+                return lineIsComplete
+            }, true)
+
+            return lineIsComplete || oneLineIsComplete
+        }, false)
+
+        const oneColumnIsComplete: boolean = this.columns.reduce((oneColumnIsComplete, currentColumn) => {
+            const columnIsComplete = currentColumn.reduce((columnIsComplete, currentColumnNumber) => {
+                if (!drawnNumbers.includes(currentColumnNumber)) {
+                    return false
+                }
+                return columnIsComplete
+            }, true)
+
+            return columnIsComplete || oneColumnIsComplete
+        }, false)
+
+        return oneLineIsComplete || oneColumnIsComplete
+    }
+
+    sumOfNotDrawnNumbers(drawnNumbers: number[]): number {
+        return this.boardNumbers.reduce((sumOfNotDrawnNumbers, currentBoardNumber) => {
+            if (!drawnNumbers.includes(currentBoardNumber)) {
+                sumOfNotDrawnNumbers += currentBoardNumber
+            }
+
+            return sumOfNotDrawnNumbers
+        }, 0)
+    }
 }
 
-const transformToBoardsWithOpenMarks = (boards) => {
-    return boards.map(board => {
-        return board.map(_ => openMark)
-    })
-}
+export const whoIsTheWinner = (sortedNumbers: number[], boards: number[][]): number => {
 
-const calculateSumOfUnmarkedNumber = (winnerBoard, winnerBoardChecked) => {
-    return winnerBoard.reduce((score, currentNumber, index) => {
-        if (winnerBoardChecked[index] === openMark) {
-            score += currentNumber
-        }
-        return score
-    }, 0);
-}
+    const realBoards: Board[] = boards.map(board => new Board(board))
 
-export const whoIsTheWinner = (sortedNumbers: number[], boards: Board[]): number => {
-
-    const howManyNumbers = boards[0].length
     let sortedNumberWhichProvocVictory: number
-    let winnerBoard: Board
-    let winnerBoardChecked: CheckedBoard
     let winnerBoardIndex: number
 
-    let checkedBoards: CheckedBoard[] = transformToBoardsWithOpenMarks(boards)
-    const linesIndexes = calculateLinesIndexes(howManyNumbers)
-    const columnsIndexes = calculateColumnsIndexes(howManyNumbers)
+    sortedNumbers.every((drawnNumber, index) => {
+        const drawnNumbers = sortedNumbers.slice(0, index + 1)
+        const winningBoards = realBoards.map(board => board.winWithNumbers(drawnNumbers))
+        const firstWinningBoard = winningBoards.findIndex(doesWin => doesWin === true)
+        const howManyWinner = winningBoards.filter(doesWin => doesWin === true).length
 
-    // check which sortedNumber provoc victory
-    sortedNumbers.every(sortedNumber => {
-
-        checkedBoards = checkedBoards.map((checkedBoard, checkedBoardIndex) => {
-            return checkedBoard.map((mark, positionIndex) => {
-                if (sortedNumber === boards[checkedBoardIndex][positionIndex])
-                    return checkMark
-                return mark
-            })
-        })
-
-        checkedBoards.every((checkedBoard, checkedBoardIndex) => {
-
-            const verifyThereIsOnlyCheckMarksForPassedIndexes = (acc, current, index) => {
-                const checkMarkOnIndexes = current.map(index => {
-                        return checkedBoard[index]
-                })
-
-                return acc || !checkMarkOnIndexes.includes(openMark)
-            }
-
-            const atLeastOneCompleteLine = linesIndexes.reduce(verifyThereIsOnlyCheckMarksForPassedIndexes, false)
-            const atLeastOneCompleteColumn = columnsIndexes.reduce(verifyThereIsOnlyCheckMarksForPassedIndexes, false)
-
-            if (atLeastOneCompleteLine || atLeastOneCompleteColumn) {
-                winnerBoardIndex = checkedBoardIndex
-                return false
-            }
-
-            return true
-        })
-
-        sortedNumberWhichProvocVictory = sortedNumber
-
-        return !(winnerBoardIndex === 0 || winnerBoardIndex > 0);
-
-    })
-
-    winnerBoard = boards[winnerBoardIndex]
-    winnerBoardChecked = checkedBoards[winnerBoardIndex]
-
-    // score
-    const sumOfUnmarkedNumber = calculateSumOfUnmarkedNumber(winnerBoard, winnerBoardChecked)
-    const score = sortedNumberWhichProvocVictory * sumOfUnmarkedNumber
-    return score
-}
-
-export const whoIsTheLooser = (sortedNumbers: number[], boards: Board[]): number => {
-
-    const howManyNumbers = boards[0].length
-    let sortedNumberWhichProvocLoose: number
-    let looserBoard: Board
-    let looserBoardChecked: CheckedBoard
-    let looserBoardIndex: number
-
-    let checkedBoards: CheckedBoard[] = transformToBoardsWithOpenMarks(boards)
-    const linesIndexes = calculateLinesIndexes(howManyNumbers)
-    const columnsIndexes = calculateColumnsIndexes(howManyNumbers)
-
-    sortedNumbers.every((sortedNumber) => {
-
-        checkedBoards = checkedBoards.map((checkedBoard, checkedBoardIndex) => {
-            return checkedBoard.map((mark, positionIndex) => {
-                if (sortedNumber === boards[checkedBoardIndex][positionIndex])
-                    return checkMark
-                return mark
-            })
-        })
-
-        // déterminer qui est le dernier perdant
-        let winners = []
-        let loosers = []
-        checkedBoards.forEach((checkedBoard, checkedBoardIndex) => {
-
-            const verifyThereIsOnlyCheckMarksForPassedIndexes = (acc, current, index) => {
-                const checkMarkOnIndexes = current.map(index => {
-                    return checkedBoard[index]
-                })
-
-                return acc || !checkMarkOnIndexes.includes(openMark)
-            }
-
-            const atLeastOneCompleteLine = linesIndexes.reduce(verifyThereIsOnlyCheckMarksForPassedIndexes, false)
-            const atLeastOneCompleteColumn = columnsIndexes.reduce(verifyThereIsOnlyCheckMarksForPassedIndexes, false)
-
-            if (atLeastOneCompleteLine || atLeastOneCompleteColumn) {
-                winners.push(checkedBoardIndex)
-            } else {
-                loosers.push(checkedBoardIndex)
-            }
-
-        })
-
-        if (loosers.length === 1) {
-            looserBoardIndex = loosers[0]
-        }
-
-        if (loosers.length === 0) {
-            sortedNumberWhichProvocLoose = sortedNumber
+        if (howManyWinner > 0) {
+            sortedNumberWhichProvocVictory = drawnNumber
+            winnerBoardIndex = firstWinningBoard
             return false
         }
 
         return true
     })
 
-    looserBoard = boards[looserBoardIndex]
-    looserBoardChecked = checkedBoards[looserBoardIndex]
+    const indexDrawnNumberWhenWin = sortedNumbers.findIndex(number => number === sortedNumberWhichProvocVictory)
+    const drawnNumbersWhenWin = sortedNumbers.slice(0, indexDrawnNumberWhenWin + 1)
 
-    let sumOfUnmarkedNumber = calculateSumOfUnmarkedNumber(looserBoard, looserBoardChecked)
-
-    return sortedNumberWhichProvocLoose * sumOfUnmarkedNumber
+    const sumOfUnmarkedNumberNew = realBoards[winnerBoardIndex].sumOfNotDrawnNumbers(drawnNumbersWhenWin)
+    return sortedNumberWhichProvocVictory * sumOfUnmarkedNumberNew
 }
 
-export const part1 = (fileName: string) => {
+export const whoIsTheLooser = (sortedNumbers: number[], boards: number[][]): number => {
+
+    const realBoards: Board[] = boards.map(board => new Board(board))
+
+    let sortedNumberWhichProvocLastWin: number
+    let looserBoardIndex: number
+
+    sortedNumbers.every((sortedNumber, index) => {
+
+        const drawnNumbers = sortedNumbers.slice(0, index + 1)
+        const loosingBoards = realBoards.map(board => board.winWithNumbers(drawnNumbers))
+        const howManyLooser = loosingBoards.filter(doesWin => doesWin === false).length
+
+        if (howManyLooser === 1) {
+            looserBoardIndex = loosingBoards.findIndex(doesWin => doesWin === false)
+        }
+
+        if (howManyLooser === 0) {
+            sortedNumberWhichProvocLastWin = sortedNumber
+            return false
+        }
+
+        return true
+
+    })
+
+    const indexDrawnNumberWhenLoose = sortedNumbers.findIndex(number => number === sortedNumberWhichProvocLastWin)
+    const drawnNumbersWhenLoose = sortedNumbers.slice(0, indexDrawnNumberWhenLoose + 1)
+
+    const sumOfUnmarkedNumberNew = realBoards[looserBoardIndex].sumOfNotDrawnNumbers(drawnNumbersWhenLoose)
+    return sortedNumberWhichProvocLastWin * sumOfUnmarkedNumberNew
+}
+
+const extractDrawnNumbersAndBoards = (fileName: string) => {
     let data = ''
     try {
         data = fs.readFileSync(fileName, "utf8")
@@ -196,26 +158,15 @@ export const part1 = (fileName: string) => {
             .filter(numberAsString => numberAsString !== '')
             .map(numberString => parseInt(numberString))
     })
+    return { numbers, boards }
+}
 
+export const part1 = (fileName: string) => {
+    const { numbers, boards } = extractDrawnNumbersAndBoards(fileName)
     return whoIsTheWinner(numbers, boards)
 }
 
 export const part2 = (fileName: string) => {
-    let data = ''
-    try {
-        data = fs.readFileSync(fileName, "utf8")
-    } catch (error) {
-        console.log(error)
-    }
-
-    const [numberAsString, ...boardsAsString]: string[] = data.split('\n\n')
-
-    const numbers = numberAsString.split(',').map(stringNumber => parseInt(stringNumber))
-    const boards = boardsAsString.map(boardAsString => {
-        return boardAsString
-            .split(/ |\n/)
-            .filter(numberAsString => numberAsString !== '')
-            .map(numberString => parseInt(numberString))
-    })
+    const { numbers, boards } = extractDrawnNumbersAndBoards(fileName)
     return whoIsTheLooser(numbers, boards)
 }

@@ -1,9 +1,57 @@
-import { part1, part2, whoIsTheLooser, whoIsTheWinner } from "./day4"
+import { Board, part1, part2, whoIsTheLooser, whoIsTheWinner } from "./day4"
 
 const examplePuzzleFilePath = 'src/day4/examplePuzzle.txt'
 const realPuzzleFilePath = 'src/day4/puzzle.txt'
 
 describe('Day 4', () => {
+
+    describe('Board', () => {
+        it('should return true when wins with line', () => {
+            // given
+            let board = new Board([1, 2, 3, 4])
+
+            // when
+            const result = board.winWithNumbers([1, 2])
+
+            // then
+            expect(result).toBe(true)
+        })
+
+        it('should return true when wins with columns', () => {
+            // given
+            let board = new Board([1, 2, 3, 4])
+
+            // when
+            const result = board.winWithNumbers([2, 4])
+
+            // then
+            expect(result).toBe(true)
+        })
+
+        it('should return false when do not win', () => {
+            // given
+            let board = new Board([1, 2, 3, 4])
+
+            // when
+            const result = board.winWithNumbers([1, 4])
+
+            // then
+            expect(result).toBe(false)
+        })
+
+        it('should return false when do not win with one number', () => {
+            // given
+            let board = new Board([1, 2, 3, 4])
+
+            // when
+            const result = board.winWithNumbers([1])
+
+            // then
+            expect(result).toBe(false)
+        })
+
+    })
+
     describe('Part 1', () => {
         test('my example', () => {
             // given

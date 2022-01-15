@@ -2,6 +2,7 @@ import {
     part1,
     part2
 } from "./day3"
+import { Board } from "../day4/day4"
 
 const examplePuzzleFilePath = 'src/day3/examplePuzzle.txt'
 const realPuzzleFilePath = 'src/day3/puzzle.txt'
