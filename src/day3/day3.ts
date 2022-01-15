@@ -1,7 +1,7 @@
 import { transformTxtToArrayOfStrings } from "../parsers"
 
-const keepMostPresentValue = numberForEachColumn => numberForEachColumn.sort((a, b) => numberForEachColumn.filter(v => v === a).length - numberForEachColumn.filter(v => v === b).length).pop()
-const keepLessPresentValue = numberForEachColumn => numberForEachColumn.sort((b, a) => numberForEachColumn.filter(v => v === a).length - numberForEachColumn.filter(v => v === b).length).pop()
+const keepMostPresentValue = numbers => numbers.sort((a, b) => numbers.filter(v => v === a).length - numbers.filter(v => v === b).length).pop()
+const keepLessPresentValue = numbers => numbers.sort((a, b) => numbers.filter(v => v === b).length - numbers.filter(v => v === a).length).pop()
 
 const createArrayWithBinaryCharacterGroupedByIndex = (binaryReport: string[]) => {
     const binaryLength = binaryReport[0].split('').length
@@ -9,7 +9,7 @@ const createArrayWithBinaryCharacterGroupedByIndex = (binaryReport: string[]) =>
         .map((value, index) => binaryReport.map(binary => binary.split('')).map(binary => binary[index]))
 }
 
-export const calculatePowerConsumptionAlternative = (binaryReport: string[]): number => {
+const calculatePowerConsumptionAlternative = (binaryReport: string[]): number => {
     const gammaRateBinary = createArrayWithBinaryCharacterGroupedByIndex(binaryReport)
         .map(keepMostPresentValue)
         .join('')
