@@ -1,4 +1,5 @@
 // Pour améliorer : Un Objet Ship ? instancié avec une strategie de deplacement ? avec une méthode move
+// throw error quand une chose est pas respecté ?
 
 import { transformTxtToArrayOfStrings } from "../parsers"
 
