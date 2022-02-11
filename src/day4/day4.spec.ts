@@ -11,7 +11,7 @@ describe('Day 4', () => {
             let board = new Board([1, 2, 3, 4])
 
             // when
-            const result = board.winWithNumbers([1, 2])
+            const result = board.atLeastOneLineOrColumnComplete([1, 2])
 
             // then
             expect(result).toBe(true)
@@ -22,7 +22,7 @@ describe('Day 4', () => {
             let board = new Board([1, 2, 3, 4])
 
             // when
-            const result = board.winWithNumbers([2, 4])
+            const result = board.atLeastOneLineOrColumnComplete([2, 4])
 
             // then
             expect(result).toBe(true)
@@ -33,7 +33,7 @@ describe('Day 4', () => {
             let board = new Board([1, 2, 3, 4])
 
             // when
-            const result = board.winWithNumbers([1, 4])
+            const result = board.atLeastOneLineOrColumnComplete([1, 4])
 
             // then
             expect(result).toBe(false)
@@ -44,7 +44,7 @@ describe('Day 4', () => {
             let board = new Board([1, 2, 3, 4])
 
             // when
-            const result = board.winWithNumbers([1])
+            const result = board.atLeastOneLineOrColumnComplete([1])
 
             // then
             expect(result).toBe(false)

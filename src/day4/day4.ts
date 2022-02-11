@@ -1,19 +1,19 @@
 /*
-- [ ] Sortir la transfo de fichier vers les utils
-- [ ] Créer objet qui défint le gagnant et perdant et resultat (On ne veut pas de let)
+- [X] Sortir la transfo de fichier vers les utils
+- [ ] Créer objet qui définit le gagnant et perdant et resultat (On ne veut pas de let)
 - [ ] Donner direct un tableau de tableau pour les board plutot que juste un tableau => ça facilite la description des lignes et colonnes
 - [ ] Fixer la version de node du projet => Il m'a fait chier avec Array.at'
 - [ ] Faire les refacto globale
 * */
 
-import * as fs from "fs"
+import { extractNumbersAndBoards } from "../parsers"
 
-interface BoardRules {
-    winWithNumbers: (sortedNumbers: number[]) => boolean
-    sumOfNotDrawnNumbers: (sortedNumbers: number[]) => number
+interface BoardDescription {
+    atLeastOneLineOrColumnComplete: (drawnNumbers: number[]) => boolean
+    sumOfNotDrawnNumbers: (drawnNumbers: number[]) => number
 }
 
-export class Board implements BoardRules {
+export class Board implements BoardDescription {
     private columns: number[][] = []
     private lines: number[][] = []
 
@@ -41,7 +41,7 @@ export class Board implements BoardRules {
 
     }
 
-    winWithNumbers(drawnNumbers: number[]): boolean {
+    atLeastOneLineOrColumnComplete(drawnNumbers: number[]): boolean {
         const oneLineIsComplete: boolean = this.lines.reduce((oneLineIsComplete, currentLine) => {
 
             const lineIsComplete = currentLine.reduce((lineIsComplete, currentLineNumber) => {
@@ -79,94 +79,105 @@ export class Board implements BoardRules {
     }
 }
 
-export const whoIsTheWinner = (sortedNumbers: number[], boards: number[][]): number => {
+interface BingoGame {
+    whoIsTheFirstWinner: () => Board
+    whoIsTheLastWinner: () => Board
+    drawNumber: (drawnNumber: number) => void
+    getNumberWhichProvocVictory: () => number
+}
 
-    const realBoards: Board[] = boards.map(board => new Board(board))
+class Bingo implements BingoGame {
+    private drawnNumbers: number[] = []
+    private drawnNumberWhichProvocVictory: number | undefined
+    private drawnNumberWhichProvocLastVictory: number | undefined
 
-    let sortedNumberWhichProvocVictory: number
-    let winnerBoardIndex: number
+    constructor(private boards: Board[]) {}
 
-    sortedNumbers.every((drawnNumber, index) => {
-        const drawnNumbers = sortedNumbers.slice(0, index + 1)
-        const winningBoards = realBoards.map(board => board.winWithNumbers(drawnNumbers))
-        const firstWinningBoard = winningBoards.findIndex(doesWin => doesWin === true)
-        const howManyWinner = winningBoards.filter(doesWin => doesWin === true).length
+    whoIsTheFirstWinner(): Board | null {
+        return this.boards.find(board => board.atLeastOneLineOrColumnComplete(this.drawnNumbers));
+    }
 
-        if (howManyWinner > 0) {
-            sortedNumberWhichProvocVictory = drawnNumber
-            winnerBoardIndex = firstWinningBoard
-            return false
+    whoIsTheLastWinner(): Board | null {
+        if (this.howManyPeopleHasNotWon() === 1) {
+            const looserIndex = this.boards
+                .map(board => board.atLeastOneLineOrColumnComplete(this.drawnNumbers))
+                .findIndex(doesWin => doesWin === false)
+            return this.boards[looserIndex]
         }
 
-        return true
+        return null
+    }
+
+    drawNumber(drawnNumber: number): void {
+        this.drawnNumbers.push(drawnNumber)
+
+        if (!this.drawnNumberWhichProvocVictory && this.whoIsTheFirstWinner())
+            this.drawnNumberWhichProvocVictory = drawnNumber
+
+        if (!this.drawnNumberWhichProvocLastVictory && this.howManyPeopleHasNotWon() === 0)
+            this.drawnNumberWhichProvocLastVictory = drawnNumber
+    }
+
+    getNumberWhichProvocVictory(): number {
+        return this.drawnNumberWhichProvocVictory;
+    }
+
+    getDrawnNumbers(): number[] {
+        return this.drawnNumbers
+    }
+
+    getNumberWhichProvocLastVictory(): number {
+        return this.drawnNumberWhichProvocLastVictory
+    }
+
+    private howManyPeopleHasNotWon() : number {
+        const loosingBoards = this.boards.map(board => board.atLeastOneLineOrColumnComplete(this.drawnNumbers))
+        return loosingBoards.filter(doesWin => doesWin === false).length
+    }
+
+}
+
+export const whoIsTheWinner = (drawnNumbers: number[], boards: number[][]): number => {
+    const realBoards: Board[] = boards.map(board => new Board(board))
+    const bingoGame = new Bingo(realBoards)
+
+    let winnerNew: Board
+
+    drawnNumbers.every((drawnNumber, index) => {
+        bingoGame.drawNumber(drawnNumber)
+        winnerNew = bingoGame.whoIsTheFirstWinner()
+
+        return !winnerNew;
     })
 
-    const indexDrawnNumberWhenWin = sortedNumbers.findIndex(number => number === sortedNumberWhichProvocVictory)
-    const drawnNumbersWhenWin = sortedNumbers.slice(0, indexDrawnNumberWhenWin + 1)
-
-    const sumOfUnmarkedNumberNew = realBoards[winnerBoardIndex].sumOfNotDrawnNumbers(drawnNumbersWhenWin)
-    return sortedNumberWhichProvocVictory * sumOfUnmarkedNumberNew
+    return bingoGame.getNumberWhichProvocVictory() * winnerNew.sumOfNotDrawnNumbers(bingoGame.getDrawnNumbers())
 }
 
 export const whoIsTheLooser = (sortedNumbers: number[], boards: number[][]): number => {
-
     const realBoards: Board[] = boards.map(board => new Board(board))
+    const bingoGame = new Bingo(realBoards)
 
-    let sortedNumberWhichProvocLastWin: number
-    let looserBoardIndex: number
+    let looserBoard: Board
 
     sortedNumbers.every((sortedNumber, index) => {
+        bingoGame.drawNumber(sortedNumber)
 
-        const drawnNumbers = sortedNumbers.slice(0, index + 1)
-        const loosingBoards = realBoards.map(board => board.winWithNumbers(drawnNumbers))
-        const howManyLooser = loosingBoards.filter(doesWin => doesWin === false).length
-
-        if (howManyLooser === 1) {
-            looserBoardIndex = loosingBoards.findIndex(doesWin => doesWin === false)
+        if (bingoGame.whoIsTheLastWinner()) {
+            looserBoard = bingoGame.whoIsTheLastWinner()
         }
 
-        if (howManyLooser === 0) {
-            sortedNumberWhichProvocLastWin = sortedNumber
-            return false
-        }
-
-        return true
-
+        return bingoGame.getNumberWhichProvocLastVictory() === undefined;
     })
 
-    const indexDrawnNumberWhenLoose = sortedNumbers.findIndex(number => number === sortedNumberWhichProvocLastWin)
-    const drawnNumbersWhenLoose = sortedNumbers.slice(0, indexDrawnNumberWhenLoose + 1)
-
-    const sumOfUnmarkedNumberNew = realBoards[looserBoardIndex].sumOfNotDrawnNumbers(drawnNumbersWhenLoose)
-    return sortedNumberWhichProvocLastWin * sumOfUnmarkedNumberNew
-}
-
-const extractDrawnNumbersAndBoards = (fileName: string) => {
-    let data = ''
-    try {
-        data = fs.readFileSync(fileName, "utf8")
-    } catch (error) {
-        console.log(error)
-    }
-
-    const [numberAsString, ...boardsAsString]: string[] = data.split('\n\n')
-
-    const numbers = numberAsString.split(',').map(stringNumber => parseInt(stringNumber))
-    const boards = boardsAsString.map(boardAsString => {
-        return boardAsString
-            .split(/ |\n/)
-            .filter(numberAsString => numberAsString !== '')
-            .map(numberString => parseInt(numberString))
-    })
-    return { numbers, boards }
+    return bingoGame.getNumberWhichProvocLastVictory() * looserBoard.sumOfNotDrawnNumbers(bingoGame.getDrawnNumbers())
 }
 
 export const part1 = (fileName: string) => {
-    const { numbers, boards } = extractDrawnNumbersAndBoards(fileName)
+    const { numbers, boards } = extractNumbersAndBoards(fileName)
     return whoIsTheWinner(numbers, boards)
 }
 
 export const part2 = (fileName: string) => {
-    const { numbers, boards } = extractDrawnNumbersAndBoards(fileName)
+    const { numbers, boards } = extractNumbersAndBoards(fileName)
     return whoIsTheLooser(numbers, boards)
 }

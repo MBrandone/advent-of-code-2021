@@ -20,3 +20,17 @@ export const transformTxtToArrayOfNumbers = (fileName: string): number[] => {
     return data.split('\n').map(measureString => parseInt(measureString))
 }
 
+export const extractNumbersAndBoards = (fileName: string) => {
+    let data = transformTxtDataToString(fileName)
+
+    const [numberAsString, ...boardsAsString]: string[] = data.split('\n\n')
+
+    const numbers = numberAsString.split(',').map(stringNumber => parseInt(stringNumber))
+    const boards = boardsAsString.map(boardAsString => {
+        return boardAsString
+            .split(/ |\n/)
+            .filter(numberAsString => numberAsString !== '')
+            .map(numberString => parseInt(numberString))
+    })
+    return { numbers, boards }
+}
